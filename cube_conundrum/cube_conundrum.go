@@ -8,6 +8,24 @@ import (
 	"unicode"
 )
 
+func isPossibleTurn(red, green, blue int) bool {
+	maxRed := 12
+	maxGreen := 13
+	maxBlue := 14
+	return red <= maxRed && green <= maxGreen && blue <= maxBlue
+}
+
+func updateNumbers(colour, minColour, number *int) {
+	if *number == 0 {
+		return
+	}
+	*colour = *number
+	if *colour > *minColour {
+		*minColour = *number
+	}
+	*number = 0
+}
+
 func main() {
 	inputFile := "input.txt"
 	file, err := os.Open(inputFile)
@@ -17,32 +35,32 @@ func main() {
 	defer file.Close()
 
 	gameId := 0
-	sum := 0
+	possibleSum := 0
+	powerSum := 0
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		gameId++
-		minRed := 0
-		minGreen := 0
-		minBlue := 0
-		var number int
+		var red, minRed int
+		var green, minGreen int
+		var blue, minBlue int
+		number := 0
+		possible := true
 		for _, char := range scanner.Text() {
 			switch char {
 			case 'r':
-				if number > minRed {
-					minRed = number
-				}
-				number = 0
+				updateNumbers(&red, &minRed, &number)
 			case 'g':
-				if number > minGreen {
-					minGreen = number
-				}
-				number = 0
+				updateNumbers(&green, &minGreen, &number)
 			case 'b':
-				if number > minBlue {
-					minBlue = number
+				updateNumbers(&blue, &minBlue, &number)
+			case ';':
+				if possible && !isPossibleTurn(red, green, blue) {
+					possible = false
 				}
-				number = 0
+				red = 0
+				green = 0
+				blue = 0
 			}
 
 			if unicode.IsDigit(char) {
@@ -52,10 +70,13 @@ func main() {
 				number = 0
 			}
 		}
-		// calculate and add power
+
+		if possible && isPossibleTurn(red, green, blue) {
+			possibleSum += gameId
+		}
 		power := minRed * minGreen * minBlue
-		sum += power
-		fmt.Printf("Game %v has power %v, sum = %v\n", gameId, power, sum)
+		powerSum += power
 	}
-	fmt.Printf("Sum of powers: %v\n", sum)
+	fmt.Printf("Sum of possible games: %v\n", possibleSum)
+	fmt.Printf("Sum of powers: %v\n", powerSum)
 }
