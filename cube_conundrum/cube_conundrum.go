@@ -25,42 +25,33 @@ func main() {
 		minRed := 0
 		minGreen := 0
 		minBlue := 0
-		var lastNumber int
-		var checkNextChar bool
+		var number int
 		for _, char := range scanner.Text() {
-			if char == ' ' {
-				// fmt.Printf("Found space, last number: %v\n", lastNumber)
-				checkNextChar = true
-				continue
-			}
-			if unicode.IsDigit(char) {
-				// fmt.Printf("Found digit %v, lastNumber %v", string(char), lastNumber)
-				digit, _ := strconv.Atoi(string(char))
-				lastNumber = lastNumber*10 + digit
-				// fmt.Printf("-> %v\n", lastNumber)
-				continue
-			}
-
-			if checkNextChar {
-				switch char {
-				case 'r':
-					if lastNumber > minRed {
-						minRed = lastNumber
-					}
-				case 'g':
-					if lastNumber > minGreen {
-						minGreen = lastNumber
-					}
-				case 'b':
-					if lastNumber > minBlue {
-						minBlue = lastNumber
-					}
+			switch char {
+			case 'r':
+				if number > minRed {
+					minRed = number
 				}
-				lastNumber = 0
+				number = 0
+			case 'g':
+				if number > minGreen {
+					minGreen = number
+				}
+				number = 0
+			case 'b':
+				if number > minBlue {
+					minBlue = number
+				}
+				number = 0
 			}
-			checkNextChar = false
-		}
 
+			if unicode.IsDigit(char) {
+				digit, _ := strconv.Atoi(string(char))
+				number = number*10 + digit
+			} else if char != ' ' {
+				number = 0
+			}
+		}
 		// calculate and add power
 		power := minRed * minGreen * minBlue
 		sum += power
