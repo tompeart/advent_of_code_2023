@@ -141,6 +141,42 @@ func isSymbolInLocation(schematic Schematic, x, y int) bool {
 	return false
 }
 
+func checkDiagonal(number Number, symbol Symbol) bool {
+	return ((number.y-1 <= symbol.y && symbol.y <= number.y+1) &&
+		(number.xStart-1 <= symbol.x && symbol.x <= number.xEnd+1))
+}
+
+func calculateGearRationSum(schematic Schematic) int {
+	gearRatioSum := 0
+	for _, symbol := range schematic.symbols {
+		gearRatio := 0
+		for _, number := range schematic.numbers {
+			if checkDiagonal(number, symbol) {
+				if gearRatio == 0 {
+					gearRatio = number.value
+				} else {
+					gearRatio = gearRatio * number.value
+					gearRatioSum += gearRatio
+					break
+				}
+			}
+		}
+	}
+	return gearRatioSum
+}
+
+func findNumberInLocation(schematic Schematic, x, y int) int {
+	for _, number := range schematic.numbers {
+		fmt.Printf("Checking %v, %v, against %v at %v, %v\n", x, y, number.value, number.xStart, number.xEnd)
+		if number.y == y {
+			if number.xStart == x || number.xEnd == x {
+				return number.value
+			}
+		}
+	}
+	return 0
+}
+
 func main() {
 	schematic := loadSchematic("input.txt")
 	for _, number := range schematic.numbers {
@@ -153,4 +189,7 @@ func main() {
 
 	value := processSchematic(schematic)
 	fmt.Printf("Schematic value is %v\n", value)
+
+	gearRatioSum := calculateGearRationSum(schematic)
+	fmt.Printf("Gear ratio sum is %v\n", gearRatioSum)
 }
