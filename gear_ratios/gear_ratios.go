@@ -97,53 +97,17 @@ func loadSchematic(inputFile string) Schematic {
 	}
 }
 
-func processSchematic(schematic Schematic) int {
+func calculateValue(schematic Schematic) int {
 	value := 0
 	for _, number := range schematic.numbers {
-		for y := -1; y < 2; y++ {
-			if isSymbolInLocation(schematic, number.xStart-1, number.y+y) {
+		for _, symbol := range schematic.symbols {
+			if checkDiagonal(number, symbol) {
 				value += number.value
-				fmt.Printf("Found symbol for %v at %v, %v\n", number.value, number.xStart-1, number.y+y)
 				break
-			}
-			if isSymbolInLocation(schematic, number.xEnd+1, number.y+y) {
-				value += number.value
-				fmt.Printf("Found symbol for %v at %v, %v\n", number.value, number.xEnd+1, number.y+y)
-				break
-			}
-			if y != 0 {
-				found := false
-				for x := number.xStart; x <= number.xEnd; x++ {
-					if isSymbolInLocation(schematic, x, number.y+y) {
-						found = true
-						fmt.Printf("Found symbol for %v at %v, %v\n", number.value, x, number.y+y)
-						break
-					}
-				}
-				if found {
-					value += number.value
-				}
 			}
 		}
 	}
 	return value
-}
-
-func isSymbolInLocation(schematic Schematic, x, y int) bool {
-	if x < 0 || x > schematic.xMax || y < 0 || y > schematic.yMax {
-		return false
-	}
-	for _, symbol := range schematic.symbols {
-		if x == symbol.x && y == symbol.y {
-			return true
-		}
-	}
-	return false
-}
-
-func checkDiagonal(number Number, symbol Symbol) bool {
-	return ((number.y-1 <= symbol.y && symbol.y <= number.y+1) &&
-		(number.xStart-1 <= symbol.x && symbol.x <= number.xEnd+1))
 }
 
 func calculateGearRationSum(schematic Schematic) int {
@@ -165,16 +129,9 @@ func calculateGearRationSum(schematic Schematic) int {
 	return gearRatioSum
 }
 
-func findNumberInLocation(schematic Schematic, x, y int) int {
-	for _, number := range schematic.numbers {
-		fmt.Printf("Checking %v, %v, against %v at %v, %v\n", x, y, number.value, number.xStart, number.xEnd)
-		if number.y == y {
-			if number.xStart == x || number.xEnd == x {
-				return number.value
-			}
-		}
-	}
-	return 0
+func checkDiagonal(number Number, symbol Symbol) bool {
+	return ((number.y-1 <= symbol.y && symbol.y <= number.y+1) &&
+		(number.xStart-1 <= symbol.x && symbol.x <= number.xEnd+1))
 }
 
 func main() {
@@ -187,7 +144,7 @@ func main() {
 	}
 	fmt.Printf("Schematic xMax %v, yMax %v\n", schematic.xMax, schematic.yMax)
 
-	value := processSchematic(schematic)
+	value := calculateValue(schematic)
 	fmt.Printf("Schematic value is %v\n", value)
 
 	gearRatioSum := calculateGearRationSum(schematic)
