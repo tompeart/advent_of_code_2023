@@ -8,9 +8,9 @@ import (
 	"unicode"
 )
 
-func scoreGame(game string) int {
+func playCard(game string) int {
 	setup := true
-	exponent := -1
+	matches := 0
 	scoreCard := make(map[int]bool)
 	current := 0
 	for _, char := range game {
@@ -34,7 +34,7 @@ func scoreGame(game string) int {
 			case ' ':
 				if current > 0 {
 					if scoreCard[current] {
-						exponent++
+						matches++
 					}
 					current = 0
 				}
@@ -50,14 +50,11 @@ func scoreGame(game string) int {
 	}
 	if current > 0 {
 		if scoreCard[current] {
-			exponent++
+			matches++
 		}
 		current = 0
 	}
-	if exponent < 0 {
-		return 0
-	}
-	return 1 << exponent
+	return matches
 }
 
 func processDigit(current int, digit rune) int {
@@ -76,11 +73,35 @@ func main() {
 	}
 	defer file.Close()
 
-	score := 0
-
+	partOneScore := 0
+	partTwoScore := 0
+	copies := []int{}
+	i := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		score += scoreGame(scanner.Text())
+		if i >= len(copies) {
+			copies = append(copies, 1)
+		} else {
+			copies[i]++
+		}
+		matches := playCard(scanner.Text())
+
+		if matches > 0 {
+			partOneScore += (1 << (matches - 1))
+			for j := i + 1; j <= i+matches; j++ {
+				if j >= len(copies) {
+					copies = append(copies, copies[i])
+				} else {
+					copies[j] += copies[i]
+				}
+			}
+		}
+		i++
 	}
-	fmt.Printf("Sum of scores: %v\n", score)
+
+	for i := 0; i < len(copies); i++ {
+		partTwoScore += copies[i]
+	}
+	fmt.Printf("Part one score: %v\n", partOneScore)
+	fmt.Printf("Part two score: %v\n", partTwoScore)
 }
